@@ -1,32 +1,37 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
+import Image from "next/image";
+import Link from "next/link";
 
-export default function Home() {
+export default function DropPage() {
   const [showInput, setShowInput] = useState(false);
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email) return;
 
-    const { error } = await supabase
-      .from("emails")
-      .insert([{ email }]);
-
-    if (error) {
-      alert("Email already registered.");
-    } else {
-      setSubmitted(true);
-    }
-
+    setSubmitted(true);
     setEmail("");
   }
+
   return (
     <main className="min-h-screen bg-black text-white">
-
+{/* LOGO BACK BUTTON */}
+<div className="absolute top-6 left-6 z-50">
+  <Link href="/">
+    <Image
+      src="/logo.png"
+      alt="IVYAIL Logo"
+      width={120}
+      height={40}
+      className="cursor-pointer hover:opacity-80 hover:drop-shadow-[0_0_15px_rgba(168,85,247,0.8)] transition"
+      priority
+    />
+  </Link>
+</div>
       {/* HERO */}
       <section className="min-h-screen flex flex-col items-center justify-center text-center px-6 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-purple-900/30 via-black to-black" />
@@ -54,7 +59,7 @@ export default function Home() {
           </button>
 
           <a
-            href="/drop"
+            href="#collections"
             className="px-8 py-3 border border-purple-500 hover:bg-purple-500/10 transition"
           >
             EXPLORE
@@ -90,6 +95,57 @@ export default function Home() {
           </p>
         )}
       </section>
+
+      {/* DROP COLLECTION SECTION */}
+      <section
+        id="collections"
+        className="px-6 py-24 max-w-7xl mx-auto"
+      >
+        <div className="grid md:grid-cols-2 gap-20 items-center">
+
+          {/* WOMENS */}
+          <Link
+            href="/drop/women"
+            className="group block text-center"
+          >
+            <h2 className="text-3xl font-semibold text-purple-400 mb-8">
+              WOMENS COLLECTION
+            </h2>
+
+            <div className="overflow-hidden rounded-xl">
+              <Image
+                src="/images/womens-set.png"
+                alt="IVYAIL Womens Set"
+                width={1000}
+                height={1000}
+                className="rounded-xl transition duration-500 group-hover:scale-105 group-hover:shadow-[0_0_80px_rgba(168,85,247,0.4)]"
+              />
+            </div>
+          </Link>
+
+          {/* MENS */}
+          <Link
+            href="/drop/men"
+            className="group block text-center"
+          >
+            <h2 className="text-3xl font-semibold text-purple-400 mb-8">
+              MENS COLLECTION
+            </h2>
+
+            <div className="overflow-hidden rounded-xl">
+              <Image
+                src="/images/mens-set.png"
+                alt="IVYAIL Mens Set"
+                width={1000}
+                height={1000}
+                className="rounded-xl transition duration-500 group-hover:scale-105 group-hover:shadow-[0_0_80px_rgba(168,85,247,0.4)]"
+              />
+            </div>
+          </Link>
+
+        </div>
+      </section>
+
     </main>
   );
 }
