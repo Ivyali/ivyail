@@ -1,206 +1,117 @@
 "use client";
 
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 
-type Product = {
-  name: string;
-  price: number;
-  sizes?: string[];
-  colors?: string[];
-};
-
-type CartItem = {
-  name: string;
-  price: number;
-  selectedSize?: string;
-  selectedColor?: string;
-};
-
-const products: Product[] = [
-  {
-    name: "Ivyail Fuzzy Slides",
-    price: 60,
-    sizes: ["6", "7", "8", "9", "10", "11"],
-  },
-  {
-    name: "Ivyail Cheetah Slides",
-    price: 65,
-    sizes: ["6", "7", "8", "9", "10", "11"],
-    colors: ["Black", "White"],
-  },
-  {
-    name: "Ivyail Breaker Jacket",
-    price: 120,
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["Black", "White", "Purple"],
-  },
-  {
-    name: "Ivyail Breaker Pants",
-    price: 95,
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["Black", "White", "Purple"],
-  },
-];
-
-export default function HomePage() {
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
+export default function Home() {
+  const [timeLeft, setTimeLeft] = useState(0);
   const [email, setEmail] = useState("");
+  const launchDate = new Date("2026-03-11T09:00:00").getTime();
 
-  const addToCart = (item: CartItem) => {
-    setCart([...cart, item]);
-    setIsCartOpen(true);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date().getTime();
+      setTimeLeft(launchDate - now);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [launchDate]);
+
+  const formatTime = () => {
+    if (timeLeft <= 0) return "LIVE";
+    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
+    const seconds = Math.floor((timeLeft / 1000) % 60);
+    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
   };
 
-  const handleCheckout = async () => {
-    if (!email) return alert("Enter email");
-
-    const res = await fetch("/api/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cart, email }),
-    });
-
-    const data = await res.json();
-
-    if (data.url) {
-      window.location.href = data.url;
-    } else {
-      alert("Checkout failed");
+  const handleNotify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      setEmail("");
+      alert("You're on the list.");
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong. Try again.");
     }
   };
 
   return (
-    <main className="min-h-screen bg-white text-black">
+    <main className="min-h-screen bg-[#f8f8f6] text-black font-sans">
+      {/* NAV */}
+      <nav className="flex justify-between items-center px-8 py-6">
+        <div className="text-sm tracking-widest">ivyail.club</div>
+        <div className="text-sm tracking-widest">@ivyail.club</div>
+      </nav>
 
       {/* HERO */}
-      <section className="text-center py-24">
-        <h1 className="text-5xl font-semibold tracking-tight">
+      <section className="flex flex-col items-center justify-center text-center px-6 py-20">
+        <h1 className="text-5xl md:text-7xl tracking-[0.4em] font-light">
           IVYAIL
         </h1>
-        <p className="mt-4 text-neutral-500">
-          Elevated essentials. Built for movement.
+
+        <p className="mt-6 text-lg max-w-xl">
+          Rooted in Movement.
         </p>
+
+        <div className="mt-8 text-sm tracking-widest">
+          DROP 01 — {formatTime()}
+        </div>
+
+        <a
+          href="#shop"
+          className="mt-10 border border-black px-8 py-3 text-xs tracking-widest hover:bg-black hover:text-white transition"
+        >
+          SHOP DROP 01
+        </a>
       </section>
 
-      {/* PRODUCTS */}
-      <section className="grid md:grid-cols-2 gap-16 px-8 max-w-6xl mx-auto pb-24">
-        {products.map((product) => (
-          <ProductCard
-            key={product.name}
-            product={product}
-            addToCart={addToCart}
+      {/* EMAIL CAPTURE */}
+      <section className="px-6 py-16 text-center">
+        <h2 className="text-2xl tracking-widest mb-6">JOIN THE DROP</h2>
+        <form
+          onSubmit={handleNotify}
+          className="flex flex-col md:flex-row justify-center gap-4 max-w-md mx-auto"
+        >
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Your email"
+            className="border border-black px-4 py-2 w-full"
           />
-        ))}
+          <button
+            type="submit"
+            className="border border-black px-6 py-2 tracking-widest hover:bg-black hover:text-white transition"
+          >
+            NOTIFY ME
+          </button>
+        </form>
       </section>
 
-      {/* CART DRAWER */}
-      <div
-        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-2xl p-6 transition-transform duration-300 ${
-          isCartOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        <button
-          className="mb-6 text-sm underline"
-          onClick={() => setIsCartOpen(false)}
-        >
-          Close
-        </button>
-
-        <h2 className="text-xl font-semibold mb-6">Cart</h2>
-
-        {cart.length === 0 && (
-          <p className="text-sm text-neutral-500">
-            Your cart is empty
-          </p>
-        )}
-
-        {cart.map((item, i) => (
-          <div key={i} className="mb-4 text-sm">
-            <div>{item.name}</div>
-            <div className="text-neutral-500">
-              {item.selectedColor} {item.selectedSize}
+      {/* PRODUCT GRID */}
+      <section id="shop" className="px-8 py-20">
+        <h2 className="text-center text-2xl tracking-widest mb-12">DROP 01</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          {["Contour Legging", "Sculpt Bra", "Ivy Jacket"].map((product) => (
+            <div key={product} className="text-center">
+              <div className="bg-gray-200 h-80 w-full mb-4" />
+              <h3 className="tracking-widest text-sm">{product}</h3>
+              <p className="mt-2 text-sm">$98</p>
             </div>
-            <div>${item.price}</div>
-          </div>
-        ))}
+          ))}
+        </div>
+      </section>
 
-        {cart.length > 0 && (
-          <>
-            <input
-              type="email"
-              placeholder="Email for receipt"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="border w-full px-3 py-2 mb-4"
-            />
-
-            <button
-              onClick={handleCheckout}
-              className="bg-black text-white w-full py-3"
-            >
-              Checkout
-            </button>
-          </>
-        )}
-      </div>
+      {/* FOOTER */}
+      <footer className="text-center py-10 text-xs tracking-widest">
+        © 2026 IVYAIL — All Rights Reserved
+      </footer>
     </main>
-  );
-}
-
-function ProductCard({
-  product,
-  addToCart,
-}: {
-  product: Product;
-  addToCart: (item: CartItem) => void;
-}) {
-  const [selectedSize, setSelectedSize] = useState(product.sizes?.[0]);
-  const [selectedColor, setSelectedColor] = useState(product.colors?.[0]);
-
-  return (
-    <div className="border-b pb-10">
-      <h3 className="text-2xl font-medium mb-2">
-        {product.name}
-      </h3>
-
-      <p className="mb-4 text-neutral-600">${product.price}</p>
-
-      {product.colors && (
-        <select
-          className="border px-3 py-2 mb-3 w-full"
-          onChange={(e) => setSelectedColor(e.target.value)}
-        >
-          {product.colors.map((color) => (
-            <option key={color}>{color}</option>
-          ))}
-        </select>
-      )}
-
-      {product.sizes && (
-        <select
-          className="border px-3 py-2 mb-4 w-full"
-          onChange={(e) => setSelectedSize(e.target.value)}
-        >
-          {product.sizes.map((size) => (
-            <option key={size}>{size}</option>
-          ))}
-        </select>
-      )}
-
-      <button
-        onClick={() =>
-          addToCart({
-            name: product.name,
-            price: product.price,
-            selectedSize,
-            selectedColor,
-          })
-        }
-        className="bg-black text-white px-6 py-3"
-      >
-        Add to Cart
-      </button>
-    </div>
   );
 }
