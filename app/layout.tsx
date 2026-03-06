@@ -1,4 +1,6 @@
 import "./globals.css";
+import { CartProvider } from "@/context/cart";
+import CartDrawer from "@/components/CartDrawer";
 
 export const metadata = {
   title: "IVYAIL",
@@ -13,7 +15,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-black text-white antialiased">
-        {children}
+
+        <CartProvider>
+          {children}
+          <CartDrawer />
+        </CartProvider>
+
       </body>
     </html>
   );
